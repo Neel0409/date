@@ -16,19 +16,30 @@
             <p class="description">Every moment becomes beautiful when we spend it together.</p>
         </header>
 
-        <form method="POST">
+        <form method="POST" novalidate id="date-simulator-form">
             {% csrf_token %}
             <div class="form-card">
+                <!-- 1. Name -->
                 <h2>First, tell me your name ❤️</h2>
                 {{ form.name }}
                 {% for error in form.name.errors %}
                     <p class="error">{{ error }}</p>
                 {% endfor %}
 
-                <h2>Where should our date be?</h2>
+                <!-- 2. Date Picker -->
+                <h2>When should we go on our date? 📅</h2>
+                <div class="date-picker-wrapper">
+                    {{ form.selected_date }}
+                </div>
+                {% for error in form.selected_date.errors %}
+                    <p class="error">{{ error }}</p>
+                {% endfor %}
+
+                <!-- 3. Where should our date be? -->
+                <h2>Where should our date be? 📍</h2>
                 <div class="options">
                     {% for choice in form.date_choice %}
-                        <label class="option-card">
+                        <label class="option-card {% if choice.is_checked %}selected{% endif %}">
                             {{ choice.tag }}
                             <span>{{ choice.choice_label }}</span>
                         </label>
@@ -38,10 +49,21 @@
                     <p class="error">{{ error }}</p>
                 {% endfor %}
 
-                <h2>What should we eat?</h2>
+                <div class="custom-field-box" id="custom-date-box" style="display: none;">
+                    <label class="custom-field-label" for="id_custom_date_choice">
+                        Tell me where you would like to go... 🌹
+                    </label>
+                    {{ form.custom_date_choice }}
+                    {% for error in form.custom_date_choice.errors %}
+                        <p class="error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <!-- 4. What should we eat? -->
+                <h2>What should we eat? 🍽️</h2>
                 <div class="options">
                     {% for choice in form.food_choice %}
-                        <label class="option-card">
+                        <label class="option-card {% if choice.is_checked %}selected{% endif %}">
                             {{ choice.tag }}
                             <span>{{ choice.choice_label }}</span>
                         </label>
@@ -51,10 +73,21 @@
                     <p class="error">{{ error }}</p>
                 {% endfor %}
 
-                <h2>What should we do together?</h2>
+                <div class="custom-field-box" id="custom-food-box" style="display: none;">
+                    <label class="custom-field-label" for="id_custom_food_choice">
+                        Tell me what you would like to eat... 🍓
+                    </label>
+                    {{ form.custom_food_choice }}
+                    {% for error in form.custom_food_choice.errors %}
+                        <p class="error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <!-- 5. What should we do together? -->
+                <h2>What should we do together? ✨</h2>
                 <div class="options">
                     {% for choice in form.activity_choice %}
-                        <label class="option-card">
+                        <label class="option-card {% if choice.is_checked %}selected{% endif %}">
                             {{ choice.tag }}
                             <span>{{ choice.choice_label }}</span>
                         </label>
@@ -64,21 +97,33 @@
                     <p class="error">{{ error }}</p>
                 {% endfor %}
 
+                <div class="custom-field-box" id="custom-activity-box" style="display: none;">
+                    <label class="custom-field-label" for="id_custom_activity_choice">
+                        What would you like us to do together? 💫
+                    </label>
+                    {{ form.custom_activity_choice }}
+                    {% for error in form.custom_activity_choice.errors %}
+                        <p class="error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <!-- 6. Personal Message -->
                 <h2>Write something special 💌</h2>
                 {{ form.message }}
                 {% for error in form.message.errors %}
                     <p class="error">{{ error }}</p>
                 {% endfor %}
 
+                <!-- 7. Consent -->
                 <label class="consent">
                     {{ form.consent }}
-                    I understand that my selections will be saved and shared with the website creator.
+                    <span>I understand that my selections will be saved and shared with the website creator.</span>
                 </label>
                 {% for error in form.consent.errors %}
                     <p class="error">{{ error }}</p>
                 {% endfor %}
 
-                <button type="submit">Confirm Our Date ♡</button>
+                <button type="submit" id="submit-btn">Confirm Our Date ♡</button>
             </div>
         </form>
 
@@ -86,5 +131,70 @@
             Made with love, just for you. ❤️
         </footer>
     </div>
+
+    <!-- Vanilla JavaScript for dynamic interactions -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 1. Prevent past dates in HTML date picker
+            const dateInput = document.getElementById('id_selected_date');
+            if (dateInput) {
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const todayFormatted = `${year}-${month}-${day}`;
+                dateInput.min = todayFormatted;
+
+                // If no date was selected yet and no initial value, keep it empty for user to pick
+            }
+
+            // 2. Setup dynamic custom fields and card highlight
+            function setupOptionToggle(radioName, customBoxId, customInputId) {
+                const radios = document.querySelectorAll(`input[name="${radioName}"]`);
+                const customBox = document.getElementById(customBoxId);
+                const customInput = document.getElementById(customInputId);
+
+                function refresh(isUserInteraction = false) {
+                    let isOtherChecked = false;
+
+                    radios.forEach(radio => {
+                        const card = radio.closest('.option-card');
+                        if (radio.checked) {
+                            if (card) card.classList.add('selected');
+                            if (radio.value === 'Other') {
+                                isOtherChecked = true;
+                            }
+                        } else {
+                            if (card) card.classList.remove('selected');
+                        }
+                    });
+
+                    if (customBox) {
+                        if (isOtherChecked) {
+                            customBox.style.display = 'block';
+                            if (isUserInteraction && customInput) {
+                                customInput.focus();
+                            }
+                        } else {
+                            customBox.style.display = 'none';
+                        }
+                    }
+                }
+
+                radios.forEach(radio => {
+                    radio.addEventListener('change', function () {
+                        refresh(true);
+                    });
+                });
+
+                // Run on initial page load (preserves selection and errors on POST reload)
+                refresh(false);
+            }
+
+            setupOptionToggle('date_choice', 'custom-date-box', 'id_custom_date_choice');
+            setupOptionToggle('food_choice', 'custom-food-box', 'id_custom_food_choice');
+            setupOptionToggle('activity_choice', 'custom-activity-box', 'id_custom_activity_choice');
+        });
+    </script>
 </body>
 </html>
