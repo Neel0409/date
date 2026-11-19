@@ -1,0 +1,90 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Special Date ❤️</title>
+    <link rel="stylesheet" href="{% static 'simulator/style.css' %}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="heart">♡</div>
+            <p class="top-text">A LITTLE SOMETHING SPECIAL FOR YOU</p>
+            <h1>Let's plan our <span>perfect date.</span></h1>
+            <p class="description">Every moment becomes beautiful when we spend it together.</p>
+        </header>
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-card">
+                <h2>First, tell me your name ❤️</h2>
+                {{ form.name }}
+                {% for error in form.name.errors %}
+                    <p class="error">{{ error }}</p>
+                {% endfor %}
+
+                <h2>Where should our date be?</h2>
+                <div class="options">
+                    {% for choice in form.date_choice %}
+                        <label class="option-card">
+                            {{ choice.tag }}
+                            <span>{{ choice.choice_label }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+                {% for error in form.date_choice.errors %}
+                    <p class="error">{{ error }}</p>
+                {% endfor %}
+
+                <h2>What should we eat?</h2>
+                <div class="options">
+                    {% for choice in form.food_choice %}
+                        <label class="option-card">
+                            {{ choice.tag }}
+                            <span>{{ choice.choice_label }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+                {% for error in form.food_choice.errors %}
+                    <p class="error">{{ error }}</p>
+                {% endfor %}
+
+                <h2>What should we do together?</h2>
+                <div class="options">
+                    {% for choice in form.activity_choice %}
+                        <label class="option-card">
+                            {{ choice.tag }}
+                            <span>{{ choice.choice_label }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+                {% for error in form.activity_choice.errors %}
+                    <p class="error">{{ error }}</p>
+                {% endfor %}
+
+                <h2>Write something special 💌</h2>
+                {{ form.message }}
+                {% for error in form.message.errors %}
+                    <p class="error">{{ error }}</p>
+                {% endfor %}
+
+                <label class="consent">
+                    {{ form.consent }}
+                    I understand that my selections will be saved and shared with the website creator.
+                </label>
+                {% for error in form.consent.errors %}
+                    <p class="error">{{ error }}</p>
+                {% endfor %}
+
+                <button type="submit">Confirm Our Date ♡</button>
+            </div>
+        </form>
+
+        <footer>
+            Made with love, just for you. ❤️
+        </footer>
+    </div>
+</body>
+</html>
